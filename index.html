@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حجز مواعيد الزيارات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-dark: #0F6E56;
+    --green-light: #E1F5EE;
+    --amber: #F59E0B;
+    --amber-light: #FFFBEB;
+    --red: #EF4444;
+    --red-light: #FEF2F2;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-400: #9CA3AF;
+    --gray-600: #4B5563;
+    --gray-800: #1F2937;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: #F0F4F8;
+    color: var(--gray-800);
+    min-height: 100vh;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ========= BOOKING PAGE ========= */
+  .booking-hero {
+    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
+    padding: 2.5rem 1.5rem 4rem;
+    text-align: center;
+    color: #fff;
+  }
+  .booking-hero h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .booking-hero p { font-size: 14px; opacity: 0.85; }
+  .booking-hero .days-badge {
+    display: inline-flex; gap: 8px; margin-top: 14px;
+  }
+  .booking-hero .days-badge span {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .booking-body {
+    padding: 0 1rem 2rem;
+    margin-top: -2rem;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--green-dark);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 18px;
+    background: var(--green);
+    border-radius: 2px;
+  }
+  .field { margin-bottom: 14px; }
+  .field:last-of-type { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-bottom: 6px;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 14px;
+    font-family: 'Tajawal', sans-serif;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    background: var(--gray-50);
+    color: var(--gray-800);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--green);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(29,158,117,0.12);
+  }
+  .slots-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .slot {
+    padding: 9px 4px;
+    text-align: center;
+    font-size: 12px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 500;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    background: #fff;
+    color: var(--gray-800);
+    transition: all 0.15s;
+  }
+  .slot:hover:not(.booked):not(.pending) {
+    border-color: var(--green);
+    background: var(--green-light);
+    color: var(--green-dark);
+  }
+  .slot.selected {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+  .slot.booked {
+    background: #F3F4F6;
+    border-color: #E5E7EB;
+    color: #9CA3AF;
+    cursor: not-allowed;
+    font-size: 11px;
+  }
+  .slot.pending {
+    background: #FFFBEB;
+    border-color: #FCD34D;
+    color: #92400E;
+    cursor: not-allowed;
+    font-size: 11px;
+  }
+  .btn-submit {
+    width: 100%;
+    padding: 13px;
+    font-size: 15px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-submit:hover { background: var(--green-dark); }
+  .btn-submit:active { transform: scale(0.98); }
+  .admin-link {
+    text-align: center;
+    margin-top: 1.25rem;
+  }
+  .admin-link a {
+    font-size: 12px;
+    color: var(--gray-400);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .admin-link a:hover { color: var(--gray-600); }
+
+  /* ========= SUCCESS PAGE ========= */
+  .success-wrap {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 2rem;
+    text-align: center;
+  }
+  .success-icon-wrap {
+    width: 80px;
+    height: 80px;
+    background: var(--green-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+  }
+  .success-icon-wrap svg { width: 40px; height: 40px; }
+  .success-wrap h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .success-wrap .subtitle { font-size: 14px; color: var(--gray-600); margin-bottom: 1.5rem; line-height: 1.6; }
+  .success-details {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    text-align: right;
+    margin-bottom: 1.25rem;
+  }
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 14px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row .lbl { color: var(--gray-400); font-size: 12px; min-width: 70px; }
+  .detail-row .val { font-weight: 500; flex: 1; }
+  .pending-badge {
+    display: inline-block;
+    background: var(--amber-light);
+    color: #92400E;
+    border: 1px solid #FCD34D;
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+  }
+  .btn-back {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 600;
+    background: var(--green-light);
+    color: var(--green-dark);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-back:hover { background: #9FE1CB; }
+
+  /* ========= ADMIN LOGIN ========= */
+  .login-wrap {
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 0 1.5rem;
+  }
+  .login-wrap .logo {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .login-wrap .logo h1 { font-size: 20px; font-weight: 700; color: var(--green-dark); }
+  .login-wrap .logo p { font-size: 13px; color: var(--gray-400); margin-top: 4px; }
+
+  /* ========= ADMIN DASHBOARD ========= */
+  .admin-header {
+    background: var(--green-dark);
+    padding: 1.25rem 1.5rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .admin-header h1 { font-size: 17px; font-weight: 700; }
+  .btn-logout {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 500;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  .admin-body { max-width: 680px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .stat-num { font-size: 28px; font-weight: 700; }
+  .stat-num.green { color: var(--green); }
+  .stat-num.amber { color: var(--amber); }
+  .stat-num.gray { color: var(--gray-600); }
+  .stat-lbl { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+  .alert-pending {
+    background: #FFFBEB;
+    border: 1px solid #FCD34D;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #92400E;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .week-nav button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--gray-600);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .week-nav button:hover { background: var(--gray-100); }
+  .week-nav span { font-size: 13px; font-weight: 600; color: var(--gray-800); white-space: nowrap; }
+  .day-tabs { display: flex; gap: 6px; }
+  .day-tab {
+    padding: 7px 16px;
+    font-size: 13px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 600;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 20px;
+    cursor: pointer;
+    background: #fff;
+    color: var(--gray-600);
+    transition: all 0.15s;
+  }
+  .day-tab.active { background: var(--green); border-color: var(--green); color: #fff; }
+  .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .filter-tab {
+    padding: 5px 14px;
+    font-size: 12px;
+    font-family: 'Tajawal', sans-serif;
+    border: 1px solid var(--gray-200);
+    border-radius: 20px;
+    cursor: pointer;
+    background: #fff;
+    color: var(--gray-600);
+  }
+  .filter-tab.active { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
+  .booking-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .booking-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .booking-name { font-size: 15px; font-weight: 700; }
+  .booking-meta { font-size: 12px; color: var(--gray-400); margin-top: 3px; line-height: 1.7; }
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-pending { background: #FFFBEB; color: #92400E; border: 1px solid #FCD34D; }
+  .badge-approved { background: #ECFDF5; color: #065F46; border: 1px solid #6EE7B7; }
+  .badge-rejected { background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5; }
+  .wa-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-wa-approve, .btn-wa-reject {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn-wa-approve { background: #25D366; color: #fff; }
+  .btn-wa-approve:hover { opacity: 0.9; }
+  .btn-wa-reject { background: var(--red); color: #fff; }
+  .btn-wa-reject:hover { opacity: 0.9; }
+  .btn-wa-approve:active, .btn-wa-reject:active { transform: scale(0.97); }
+  .wa-icon { width: 16px; height: 16px; fill: #fff; flex-shrink: 0; }
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--gray-400);
+  }
+  .empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-state p { font-size: 14px; }
+  .slots-hint {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 10px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .hint-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<!-- BOOKING PAGE -->
+<div id="page-booking" class="page active">
+  <div class="booking-hero">
+    <h1>📅 حجز موعد زيارة</h1>
+    <p>مكتب المشتريات · يرجى تعبئة البيانات بدقة</p>
+    <div class="days-badge">
+      <span>الاثنين</span>
+      <span>الأربعاء</span>
+      <span>9:00 ص – 1:00 م</span>
+    </div>
+  </div>
+  <div class="booking-body">
+    <div class="card">
+      <div class="card-title">البيانات الشخصية</div>
+      <div class="field">
+        <label>اسم المندوب</label>
+        <input type="text" id="rep-name" placeholder="أدخل اسمك الكامل">
+      </div>
+      <div class="field">
+        <label>رقم الجوال (واتساب)</label>
+        <input type="tel" id="rep-phone" placeholder="05xxxxxxxx">
+      </div>
+      <div class="field">
+        <label>اسم الشركة</label>
+        <input type="text" id="rep-company" placeholder="اسم شركتك">
+      </div>
+      <div class="field">
+        <label>اسم الوكيل المراد زيارته</label>
+        <input type="text" id="rep-agent" placeholder="اسم الوكيل">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">اختر موعد الزيارة</div>
+      <div class="field">
+        <label>يوم الزيارة</label>
+        <select id="visit-day" onchange="loadSlots()">
+          <option value="">-- اختر يوم --</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>الوقت المناسب</label>
+        <div class="slots-grid" id="slots-container">
+          <div style="grid-column:1/-1;text-align:center;color:#9CA3AF;font-size:13px;padding:1rem">اختر يوماً أولاً</div>
+        </div>
+        <div class="slots-hint">
+          <span><span class="hint-dot" style="background:#1D9E75"></span> متاح</span>
+          <span><span class="hint-dot" style="background:#FCD34D"></span> قيد الانتظار</span>
+          <span><span class="hint-dot" style="background:#E5E7EB"></span> محجوز</span>
+        </div>
+      </div>
+      <button class="btn-submit" onclick="submitBooking()">إرسال طلب الحجز ←</button>
+    </div>
+    <div class="admin-link">
+      <a onclick="showPage('page-admin-login')">🔒 دخول مدير</a>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS PAGE -->
+<div id="page-success" class="page">
+  <div class="success-wrap">
+    <div class="success-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6L9 17l-5-5"/>
+      </svg>
+    </div>
+    <h2>تم إرسال طلبك!</h2>
+    <p class="subtitle">سيتم مراجعة طلبك من قِبل مكتب المشتريات<br>وسيصلك رد على واتساب قريباً</p>
+    <div class="pending-badge">⏳ بانتظار الموافقة</div>
+    <div class="success-details" id="success-details"></div>
+    <button class="btn-back" onclick="newBooking()">+ حجز موعد آخر</button>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="page-admin-login" class="page">
+  <div class="login-wrap">
+    <div class="logo">
+      <h1>🔒 لوحة المدير</h1>
+      <p>مكتب المشتريات</p>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>كلمة المرور</label>
+        <input type="password" id="admin-pass" placeholder="أدخل كلمة المرور" onkeydown="if(event.key==='Enter')checkAdmin()">
+      </div>
+      <button class="btn-submit" onclick="checkAdmin()">دخول</button>
+      <p id="admin-err" style="font-size:13px;color:#EF4444;text-align:center;margin-top:10px;display:none">❌ كلمة المرور غير صحيحة</p>
+    </div>
+    <div class="admin-link"><a onclick="showPage('page-booking')">← رجوع</a></div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="page-admin" class="page">
+  <div class="admin-header">
+    <h1>📋 لوحة المشتريات</h1>
+    <button class="btn-logout" onclick="showPage('page-booking')">خروج</button>
+  </div>
+  <div class="admin-body">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num gray" id="stat-total">0</div>
+        <div class="stat-lbl">إجمالي الطلبات</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num amber" id="stat-pending">0</div>
+        <div class="stat-lbl">بانتظار ردك</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num green" id="stat-approved">0</div>
+        <div class="stat-lbl">مقبول</div>
+      </div>
+    </div>
+    <div id="pending-alert" class="alert-pending" style="display:none">
+      ⚠️ لديك طلبات تحتاج ردك — ارسل قبول أو رفض من الأزرار أدناه
+    </div>
+    <div class="controls">
+      <div class="week-nav">
+        <button onclick="changeWeek(-1)">&#8594;</button>
+        <span id="week-label">—</span>
+        <button onclick="changeWeek(1)">&#8592;</button>
+      </div>
+      <div class="day-tabs">
+        <div class="day-tab active" id="tab-mon" onclick="switchDay('mon')">الاثنين</div>
+        <div class="day-tab" id="tab-wed" onclick="switchDay('wed')">الأربعاء</div>
+      </div>
+    </div>
+    <div class="filter-tabs">
+      <div class="filter-tab active" id="filter-all" onclick="switchFilter('all')">الكل</div>
+      <div class="filter-tab" id="filter-pending" onclick="switchFilter('pending')">بانتظار الرد</div>
+      <div class="filter-tab" id="filter-approved" onclick="switchFilter('approved')">مقبول</div>
+      <div class="filter-tab" id="filter-rejected" onclick="switchFilter('rejected')">مرفوض</div>
+    </div>
+    <div id="admin-list"></div>
+  </div>
+</div>
+
+<script>
+const ADMIN_PASS = '2030';
+const OFFICE_PHONE = '966564882030'; // رقم مكتب المشتريات للإشعارات
+let bookings = JSON.parse(localStorage.getItem('vb_bookings') || '[]');
+let selectedSlot = null;
+let adminDay = 'mon';
+let weekOffset = 0;
+let adminFilter = 'all';
+
+function save() { localStorage.setItem('vb_bookings', JSON.stringify(bookings)); }
+
+function getWeekDays(offset) {
+  const now = new Date();
+  const day = now.getDay();
+  const diffToMon = day === 0 ? -6 : 1 - day;
+  const mon = new Date(now);
+  mon.setDate(now.getDate() + diffToMon + (offset * 7));
+  mon.setHours(0, 0, 0, 0);
+  const wed = new Date(mon);
+  wed.setDate(mon.getDate() + 2);
+  return { mon, wed };
+}
+
+function fmtDate(d) {
+  return d.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+function fmtDateShort(d) {
+  return d.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' });
+}
+function fmtKey(d) { return d.toISOString().slice(0, 10); }
+
+function generateSlots() {
+  const s = [];
+  for (let h = 9; h <= 13; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      if (h === 13 && m > 0) break;
+      s.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+    }
+  }
+  return s;
+}
+
+function fmtTime(t) {
+  const [h, m] = t.split(':').map(Number);
+  const p = h < 12 ? 'ص' : 'م';
+  const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  return `${h12}:${m.toString().padStart(2, '0')} ${p}`;
+}
+
+function populateDays() {
+  const sel = document.getElementById('visit-day');
+  sel.innerHTML = '<option value="">-- اختر يوم --</option>';
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  for (let w = 0; w < 6; w++) {
+    const { mon, wed } = getWeekDays(w);
+    [mon, wed].forEach(d => {
+      if (d < today) return;
+      const key = fmtKey(d);
+      const taken = bookings.filter(b => b.date === key && b.status !== 'rejected').length;
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = fmtDate(d) + (taken >= 17 ? ' (مكتمل)' : '');
+      if (taken >= 17) opt.disabled = true;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+function loadSlots() {
+  selectedSlot = null;
+  const dateKey = document.getElementById('visit-day').value;
+  const container = document.getElementById('slots-container');
+  if (!dateKey) {
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#9CA3AF;font-size:13px;padding:1rem">اختر يوماً أولاً</div>';
+    return;
+  }
+  const dayB = bookings.filter(b => b.date === dateKey && b.status !== 'rejected');
+  const approved = dayB.filter(b => b.status === 'approved').map(b => b.time);
+  const pending = dayB.filter(b => b.status === 'pending').map(b => b.time);
+  container.innerHTML = '';
+  generateSlots().forEach(s => {
+    const div = document.createElement('div');
+    if (approved.includes(s)) {
+      div.className = 'slot booked';
+      div.textContent = 'محجوز';
+    } else if (pending.includes(s)) {
+      div.className = 'slot pending';
+      div.textContent = 'انتظار';
+    } else {
+      div.className = 'slot';
+      div.textContent = fmtTime(s);
+      div.onclick = () => selectSlot(div, s);
+    }
+    container.appendChild(div);
+  });
+}
+
+function selectSlot(el, time) {
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSlot = time;
+}
+
+function submitBooking() {
+  const name = document.getElementById('rep-name').value.trim();
+  const phone = document.getElementById('rep-phone').value.trim();
+  const company = document.getElementById('rep-company').value.trim();
+  const agent = document.getElementById('rep-agent').value.trim();
+  const date = document.getElementById('visit-day').value;
+  if (!name || !phone || !company || !agent) { alert('يرجى تعبئة جميع الحقول'); return; }
+  if (!date) { alert('يرجى اختيار يوم الزيارة'); return; }
+  if (!selectedSlot) { alert('يرجى اختيار وقت الموعد'); return; }
+  const conflict = bookings.find(b => b.date === date && b.time === selectedSlot && b.status !== 'rejected');
+  if (conflict) { alert('هذا الموعد غير متاح، اختر موعداً آخر'); loadSlots(); return; }
+
+  const b = { id: Date.now(), name, phone, company, agent, date, time: selectedSlot, status: 'pending', createdAt: new Date().toISOString() };
+  bookings.push(b);
+  save();
+
+  const d = new Date(date + 'T12:00:00');
+  document.getElementById('success-details').innerHTML = `
+    <div class="detail-row"><span class="lbl">المندوب</span><span class="val">${name}</span></div>
+    <div class="detail-row"><span class="lbl">الجوال</span><span class="val">${phone}</span></div>
+    <div class="detail-row"><span class="lbl">الشركة</span><span class="val">${company}</span></div>
+    <div class="detail-row"><span class="lbl">الوكيل</span><span class="val">${agent}</span></div>
+    <div class="detail-row"><span class="lbl">التاريخ</span><span class="val">${fmtDate(d)}</span></div>
+    <div class="detail-row"><span class="lbl">الوقت</span><span class="val">${fmtTime(selectedSlot)}</span></div>
+  `;
+  showPage('page-success');
+}
+
+function newBooking() {
+  ['rep-name', 'rep-phone', 'rep-company', 'rep-agent'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('visit-day').value = '';
+  selectedSlot = null;
+  populateDays();
+  loadSlots();
+  showPage('page-booking');
+}
+
+function checkAdmin() {
+  const pass = document.getElementById('admin-pass').value;
+  const err = document.getElementById('admin-err');
+  if (pass === ADMIN_PASS) {
+    err.style.display = 'none';
+    document.getElementById('admin-pass').value = '';
+    loadAdmin();
+    showPage('page-admin');
+  } else { err.style.display = 'block'; }
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function changeWeek(dir) { weekOffset += dir; loadAdmin(); }
+
+function switchDay(d) {
+  adminDay = d;
+  document.getElementById('tab-mon').classList.toggle('active', d === 'mon');
+  document.getElementById('tab-wed').classList.toggle('active', d === 'wed');
+  renderList();
+}
+
+function switchFilter(f) {
+  adminFilter = f;
+  ['all', 'pending', 'approved', 'rejected'].forEach(x => {
+    document.getElementById('filter-' + x).classList.toggle('active', x === f);
+  });
+  renderList();
+}
+
+function loadAdmin() {
+  const { mon, wed } = getWeekDays(weekOffset);
+  document.getElementById('week-label').textContent = `${fmtDateShort(mon)} – ${fmtDateShort(wed)}`;
+  const pending = bookings.filter(b => b.status === 'pending').length;
+  document.getElementById('stat-total').textContent = bookings.length;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-approved').textContent = bookings.filter(b => b.status === 'approved').length;
+  document.getElementById('pending-alert').style.display = pending > 0 ? 'flex' : 'none';
+  renderList();
+}
+
+function renderList() {
+  const { mon, wed } = getWeekDays(weekOffset);
+  const dateKey = fmtKey(adminDay === 'mon' ? mon : wed);
+  let list = bookings.filter(b => b.date === dateKey);
+  if (adminFilter !== 'all') list = list.filter(b => b.status === adminFilter);
+  list.sort((a, b) => a.time.localeCompare(b.time));
+  const container = document.getElementById('admin-list');
+
+  if (list.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <p>لا توجد حجوزات لهذا اليوم</p>
+    </div>`;
+    return;
+  }
+
+  const waIcon = `<svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path fill="#fff" d="M12 0C5.373 0 0 5.373 0 12c0 2.115.554 4.1 1.523 5.827L.057 23.882a.5.5 0 00.61.61l6.055-1.466A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.8 9.8 0 01-5.031-1.383l-.36-.215-3.733.904.92-3.64-.236-.374A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>`;
+
+  container.innerHTML = list.map(b => {
+    const d = new Date(b.date + 'T12:00:00');
+    const rawPhone = b.phone.replace(/[^0-9]/g, '');
+    const intlPhone = rawPhone.startsWith('0') ? '966' + rawPhone.slice(1) : rawPhone;
+    const dateStr = fmtDate(d);
+    const timeStr = fmtTime(b.time);
+
+    const approveMsg = encodeURIComponent(
+`✅ تم قبول موعد زيارتك
+
+أهلاً ${b.name}،
+يسعدنا إبلاغك بقبول طلب حجزك:
+
+📅 ${dateStr}
+⏰ ${timeStr}
+🏢 ${b.company}
+👔 الوكيل: ${b.agent}
+
+نرحب بك في الموعد المحدد.
+مكتب المشتريات`);
+
+    const rejectMsg = encodeURIComponent(
+`❌ اعتذار بشأن طلب الحجز
+
+أهلاً ${b.name}،
+نأسف لإبلاغك بعدم إمكانية تأكيد موعدك في:
+
+📅 ${dateStr}
+⏰ ${timeStr}
+
+يرجى التواصل معنا لتحديد موعد بديل.
+مكتب المشتريات`);
+
+    const statusBadge = b.status === 'pending'
+      ? '<span class="badge badge-pending">⏳ بانتظار الرد</span>'
+      : b.status === 'approved'
+      ? '<span class="badge badge-approved">✓ مقبول</span>'
+      : '<span class="badge badge-rejected">✗ مرفوض</span>';
+
+    return `
+    <div class="booking-card">
+      <div class="booking-top">
+        <div>
+          <div class="booking-name">${fmtTime(b.time)} · ${b.name}</div>
+          <div class="booking-meta">
+            🏢 ${b.company} · 👔 ${b.agent}<br>
+            📞 ${b.phone}
+          </div>
+        </div>
+        ${statusBadge}
+      </div>
+      <div class="wa-actions">
+        <a class="btn-wa-approve" href="https://wa.me/${intlPhone}?text=${approveMsg}" target="_blank" onclick="updateStatus(${b.id},'approved')">
+          ${waIcon} قبول + واتساب
+        </a>
+        <a class="btn-wa-reject" href="https://wa.me/${intlPhone}?text=${rejectMsg}" target="_blank" onclick="updateStatus(${b.id},'rejected')">
+          ${waIcon} رفض + واتساب
+        </a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateStatus(id, status) {
+  const b = bookings.find(b => b.id === id);
+  if (b) { b.status = status; save(); }
+  setTimeout(() => { loadAdmin(); }, 400);
+}
+
+populateDays();
+</script>
+</body>
+</html>
