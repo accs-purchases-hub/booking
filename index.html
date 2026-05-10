@@ -581,13 +581,40 @@
 <script>
 const ADMIN_PASS = '2030';
 const OFFICE_PHONE = '966564882030'; // رقم مكتب المشتريات للإشعارات
-let bookings = JSON.parse(localStorage.getItem('vb_bookings') || '[]');
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyk4GkOwyJ7UNXEVuotAQZDo2ndZ2XSELWD-dbDRmNSN-jReN0FWxKjQ7dnJyc7293jqw/exec';
+let bookings = [];
 let selectedSlot = null;
 let adminDay = 'mon';
 let weekOffset = 0;
 let adminFilter = 'all';
 
-function save() { localStorage.setItem('vb_bookings', JSON.stringify(bookings)); }
+function save() {}
+
+async function addBooking(b) {
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({action: 'add', booking: b})
+    });
+  } catch(e) {}
+}
+
+async function updateBooking(id, status) {
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({action: 'update', id: id, status: status})
+    });
+  } catch(e) {}
+}
+
+async function loadBookings() {
+  try {
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    bookings = data;
+  } catch(e) { bookings = []; }
+}
 
 function getWeekDays(offset) {
   const now = new Date();
@@ -695,7 +722,7 @@ function submitBooking() {
 
   const b = { id: Date.now(), name, phone, company, agent, date, time: selectedSlot, status: 'pending', createdAt: new Date().toISOString() };
   bookings.push(b);
-  save();
+  addBooking(b);
 
   const d = new Date(date + 'T12:00:00');
   document.getElementById('success-details').innerHTML = `
@@ -725,7 +752,7 @@ function checkAdmin() {
     err.style.display = 'none';
     document.getElementById('admin-pass').value = '';
     loadAdmin();
-    showPage('page-admin');
+    loadBookings().then(() => { showPage('page-admin'); renderAdmin(); });
   } else { err.style.display = 'block'; }
 }
 
@@ -846,11 +873,11 @@ function renderList() {
 
 function updateStatus(id, status) {
   const b = bookings.find(b => b.id === id);
-  if (b) { b.status = status; save(); }
+  if (b) { b.status = status; updateBooking(id, status); }
   setTimeout(() => { loadAdmin(); }, 400);
 }
 
-populateDays();
+loadBookings().then(() => { populateDays(); });
 </script>
 </body>
 </html>
