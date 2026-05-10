@@ -602,10 +602,10 @@ function getWeekDays(offset) {
 }
 
 function fmtDate(d) {
-  return d.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  return d.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', calendar: 'gregory' });
 }
 function fmtDateShort(d) {
-  return d.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' });
+  return d.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric', calendar: 'gregory' });
 }
 function fmtKey(d) { return d.toISOString().slice(0, 10); }
 
